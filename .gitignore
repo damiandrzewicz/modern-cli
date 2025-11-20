@@ -1,0 +1,50 @@
+# Build directories
+/build/
+/out/
+/bin/
+/lib/
+/dist/
+
+# CMake build artifacts
+CMakeFiles/
+CMakeCache.txt
+CMakeScripts/
+Testing/
+cmake_install.cmake
+CTestTestfile.cmake
+install_manifest.txt
+_compile_commands.json
+CMakePresets.json.user
+
+# Ninja / Make
+*.ninja
+.ninja_deps
+.ninja_log
+Makefile
+
+# IDE / editor
+.vscode/
+.idea/
+*.code-workspace
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# ccache
+ccache/
+*.ccache
+
+# Backup / temp
+*~
+*.swp
+*.swo
+*.orig
+*.tmp
+
+# Test outputs
+/tests/Testing/
+tests/Testing/

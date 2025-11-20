@@ -1,0 +1,20 @@
+Checks: >
+  clang-diagnostic-*,
+  clang-analyzer-*,
+  bugprone-*,
+  performance-*,
+  readability-*,
+  modernize-*,
+  cppcoreguidelines-*,
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -modernize-use-trailing-return-type
+
+WarningsAsErrors: [
+  "clang-diagnostic-*",
+  "bugprone-*"
+]
+
+HeaderFilterRegex: "^(include|src|tests)/"
+AnalyzeTemporaryDtors: true
+FormatStyle: none

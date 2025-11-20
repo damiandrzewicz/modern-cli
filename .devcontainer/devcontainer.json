@@ -1,0 +1,20 @@
+{
+  "name": "moderncli-dev",
+  "dockerFile": "Dockerfile",
+  "context": ".",
+  "remoteUser": "vscode",
+  "features": {},
+  "postCreateCommand": "bash .devcontainer/scripts/install-clangd.sh",
+  "runArgs": [
+    "--cap-add=SYS_PTRACE",
+    "--security-opt",
+    "seccomp=unconfined"
+  ],
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+    "type=volume,source=ccache-vol,target=/home/vscode/.ccache",
+    "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached"
+  ],
+  "workspaceFolder": "/workspace"
+}

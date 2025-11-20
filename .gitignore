@@ -23,7 +23,7 @@ CMakePresets.json.user
 Makefile
 
 # IDE / editor
-.vscode/
+# .vscode/
 .idea/
 *.code-workspace
 

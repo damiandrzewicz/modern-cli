@@ -1,0 +1,24 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "CMake: configure (dev)",
+      "type": "shell",
+      "command": "cmake --preset dev",
+      "group": "build"
+    },
+    {
+      "label": "CMake: build (dev)",
+      "type": "shell",
+      "command": "cmake --build --preset dev-build",
+      "group": "build"
+    },
+    {
+      "label": "CTest: run tests (dev)",
+      "type": "shell",
+      "command": "ctest --preset dev-test",
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}

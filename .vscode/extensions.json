@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    "ms-vscode.cpptools",
+    "ms-vscode.cmake-tools",
+    "ms-vscode.cpptools-extension-pack",
+    "twxs.cmake",
+    "xaver.clang-format",
+    "llvm-vs-code-extensions.vscode-clangd",
+    "ms-vscode.test-adapter-converter",
+    "llvm-vs-code-extensions.vscode-clangd",
+    "donjayamanne.githistory",
+    "eamodio.gitlens"
+  ]
+}

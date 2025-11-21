@@ -11,6 +11,12 @@
 namespace moderncli
 {
 
+inline const int& bad_header_function()
+{
+    int x = 42;
+    return x;  // clang-tidy: bugprone-returning-address-of-local
+}
+
 struct Version
 {
     int major;

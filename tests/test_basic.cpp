@@ -2,12 +2,6 @@
 
 #include <gtest/gtest.h>
 
-const int& return_local_ref()
-{
-    int x = 42;
-    return x;  // bugprone-returning-address-of-local
-}
-
 TEST(Basic, Version)
 {
     const auto& v = moderncli::version();

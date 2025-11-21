@@ -1,4 +1,32 @@
-Checks: >
+# .clang-tidy for ModernCLI
+# =========================
+# Goal:
+#   - Strong static analysis for modern C++20/23
+#   - Focus on correctness, readability, and modernization
+#   - Keep noise manageable (some checks explicitly disabled)
+
+# Enabled check families:
+#   - clang-diagnostic-*   : compiler diagnostics surfaced via clang-tidy
+#   - clang-analyzer-*     : static analyzer (null deref, leaks, logic bugs)
+#   - bugprone-*           : common bug patterns (suspicious conditions, etc.)
+#   - performance-*        : obvious performance pitfalls
+#   - readability-*        : style/readability improvements
+#   - modernize-*          : migrate to modern C++ idioms (override, nullptr, range-for, etc.)
+#   - cppcoreguidelines-*  : C++ Core Guidelines enforcement
+#   - hicpp-*              : High Integrity C++ rules (overlaps cppcoreguidelines, but useful)
+#
+# Explicitly disabled checks:
+#   - cppcoreguidelines-owning-memory
+#       You may intentionally manage memory in low-level parts of the library.
+#   - cppcoreguidelines-avoid-magic-numbers / readability-magic-numbers
+#       Too noisy for CLI code; magic numbers in tests/examples are often fine.
+#   - cppcoreguidelines-pro-bounds-array-to-pointer-decay
+#       Very noisy for typical C APIs; revisit if you want stricter bounds checking.
+#   - modernize-use-trailing-return-type
+#       Trailing return types are a style preference; not enforcing here.
+#   - modernize-pass-by-value
+#       Can be noisy and not always better; keep control at code-review level.
+Checks: >-
   clang-diagnostic-*,
   clang-analyzer-*,
   bugprone-*,
@@ -6,15 +34,24 @@ Checks: >
   readability-*,
   modernize-*,
   cppcoreguidelines-*,
+  hicpp-*,
   -cppcoreguidelines-owning-memory,
   -cppcoreguidelines-avoid-magic-numbers,
-  -modernize-use-trailing-return-type
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -modernize-use-trailing-return-type,
+  -modernize-pass-by-value,
+  -readability-magic-numbers
 
-WarningsAsErrors: [
-  "clang-diagnostic-*",
-  "bugprone-*"
-]
+# Treat core diagnostics and bugprone issues as errors.
+# This keeps the codebase "clean" from serious issues.
+WarningsAsErrors: 'clang-diagnostic-*,bugprone-*'
 
-HeaderFilterRegex: "^(include|src|tests)/"
-AnalyzeTemporaryDtors: true
+# Limit checks to project sources/headers/tests.
+# This avoids noise from external dependencies.
+HeaderFilterRegex: '^(include|src|tests)/'
+
+# Defer formatting to .clang-format instead of clang-tidy's internal style.
 FormatStyle: none
+
+# Compiler arguments to emulate your actual build.
+# Use C++23 since ModernCLI t

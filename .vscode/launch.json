@@ -5,12 +5,11 @@
       "name": "Debug moderncli_tests",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/moderncli_tests",
+      "program": "${workspaceFolder}/build/tests/moderncli_tests",
       "args": [],
       "cwd": "${workspaceFolder}",
       "MIMode": "gdb",
       "miDebuggerPath": "/usr/bin/gdb",
-      "env": {},
       "externalConsole": false
     }
   ]

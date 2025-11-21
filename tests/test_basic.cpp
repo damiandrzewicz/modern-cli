@@ -1,7 +1,9 @@
-#include <gtest/gtest.h>
 #include "moderncli/moderncli.hpp"
 
-TEST(Basic, Version) {
+#include <gtest/gtest.h>
+
+TEST(Basic, Version)
+{
     const auto& v = moderncli::version();
     EXPECT_EQ(v.major, 0);
     EXPECT_EQ(v.minor, 1);
@@ -9,7 +11,8 @@ TEST(Basic, Version) {
     EXPECT_STREQ(v.string.data(), "0.1.0");
 }
 
-TEST(Basic, EmptyParse) {
+TEST(Basic, EmptyParse)
+{
     moderncli::Cli cli;
     int argc = 1;
     const char* argv_raw[] = {"moderncli_test"};

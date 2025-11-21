@@ -46,7 +46,7 @@ jobs:
   clang_tidy:
     runs-on: ubuntu-latest
     needs: build_and_test
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -74,6 +74,23 @@ jobs:
             moderncli-ci:latest \
             bash -lc '
               set -e
-              # Analyze all tracked .cpp files
-              git ls-files \"*.cpp\" | xargs -n1 clang-tidy -p build
+
+              # Allow git to operate on /workspace (mounted from GitHub Actions)
+              git config --global --add safe.directory /workspace
+
+              # Gather all tracked .cpp files
+              files=$(git ls-files "*.cpp" || true)
+
+              if [ -z "$files" ]; then
+                echo "No .cpp files found to analyze."
+                exit 0
+              fi
+
+              echo "Running clang-tidy on:"
+              printf "  %s\n" $files
+
+              for f in $files; do
+                echo "=== clang-tidy: $f ==="
+                clang-tidy -p build "$f"
+              done
             '

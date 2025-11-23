@@ -113,3 +113,5 @@ install(
         "${CMAKE_CURRENT_BINARY_DIR}/mcliConfigVersion.cmake"
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/mcli
 )
+
+include(cmake/clang_tidy.cmake)

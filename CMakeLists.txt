@@ -113,3 +113,5 @@ install(
         "${CMAKE_CURRENT_BINARY_DIR}/moderncliConfigVersion.cmake"
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/moderncli
 )
+
+include(cmake/clang_tidy.cmake)

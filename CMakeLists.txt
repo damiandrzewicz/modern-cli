@@ -30,10 +30,17 @@ endif()
 add_library(mcli INTERFACE)
 add_library(mcli::mcli ALIAS mcli)
 
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/mcli/version.hpp.in
+    ${CMAKE_CURRENT_BINARY_DIR}/generated/mcli/version.hpp
+    @ONLY
+)
+
 target_include_directories(
     mcli
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/generated>
         $<INSTALL_INTERFACE:include>
 )
 

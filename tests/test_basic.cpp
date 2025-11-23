@@ -1,18 +1,21 @@
-#include <gtest/gtest.h>
-#include "moderncli/moderncli.hpp"
+#include "mcli/mcli.hpp"
 
-TEST(Basic, Version) {
-    const auto& v = moderncli::version();
+#include <gtest/gtest.h>
+
+TEST(Basic, Version)
+{
+    const auto& v = mcli::version();
     EXPECT_EQ(v.major, 0);
     EXPECT_EQ(v.minor, 1);
     EXPECT_EQ(v.patch, 0);
     EXPECT_STREQ(v.string.data(), "0.1.0");
 }
 
-TEST(Basic, EmptyParse) {
-    moderncli::Cli cli;
+TEST(Basic, EmptyParse)
+{
+    mcli::Cli cli;
     int argc = 1;
-    const char* argv_raw[] = {"moderncli_test"};
+    const char* argv_raw[] = {"mcli_test"};
     char** argv = const_cast<char**>(argv_raw);
 
     int rc = cli.parse(argc, argv);

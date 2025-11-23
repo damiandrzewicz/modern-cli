@@ -1,14 +1,14 @@
-#ifndef MODERNCLI_MODERNCLI_HPP
-#define MODERNCLI_MODERNCLI_HPP
+#ifndef MCLI_MCLI_HPP
+#define MCLI_MCLI_HPP
 
-#include "moderncli/detail/config.hpp"
+#include "mcli/detail/config.hpp"
 
 #include <span>
 #include <string>
 #include <string_view>
 #include <vector>
 
-namespace moderncli
+namespace mcli
 {
 
 struct Version
@@ -37,6 +37,6 @@ public:
     }
 };
 
-}  // namespace moderncli
+}  // namespace mcli
 
-#endif  // MODERNCLI_MODERNCLI_HPP
+#endif  // MCLI_MCLI_HPP

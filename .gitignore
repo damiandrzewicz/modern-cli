@@ -37,6 +37,8 @@ Thumbs.db
 # ccache
 ccache/
 *.ccache
+.cache/
+.cache/**
 
 # Backup / temp
 *~

@@ -18,16 +18,16 @@ CPMAddPackage(
     OPTIONS "INSTALL_GTEST OFF"
 )
 
-add_executable(moderncli_tests
+add_executable(mcli_tests
     test_basic.cpp
 )
 
-target_link_libraries(moderncli_tests
+target_link_libraries(mcli_tests
     PRIVATE
-        moderncli::moderncli
-        moderncli_version
+        mcli::mcli
+        mcli_version
         GTest::gtest_main
 )
 
 include(GoogleTest)
-gtest_discover_tests(moderncli_tests)
+gtest_discover_tests(mcli_tests)

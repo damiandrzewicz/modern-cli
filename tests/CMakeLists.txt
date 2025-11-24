@@ -14,12 +14,12 @@ include("${CPM_DOWNLOAD_LOCATION}")
 CPMAddPackage(
     NAME GTest
     GITHUB_REPOSITORY google/googletest
-    GIT_TAG v1.17.0 # or latest
+    GIT_TAG v1.17.0
     OPTIONS "INSTALL_GTEST OFF"
 )
 
 add_executable(mcli_tests
-    test_basic.cpp
+    test_version.cpp
 )
 
 target_link_libraries(mcli_tests

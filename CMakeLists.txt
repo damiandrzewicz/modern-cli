@@ -1,8 +1,14 @@
 cmake_minimum_required(VERSION 3.25)
 
+include(cmake/git_version.cmake)
+
+# Derive SemVer from the latest git tag (vMAJOR.MINOR.PATCH). If no tag exists,
+# fall back to 0.0.0. A dirty working tree can be surfaced in mcli::version().
+mcli_compute_version(MCLI_GIT_VERSION MCLI_GIT_DIRTY)
+
 project(
     mcli
-    VERSION 0.1.0
+    VERSION ${MCLI_GIT_VERSION}
     DESCRIPTION "Modern, type-safe, reflection-based CLI framework for C++23"
     LANGUAGES CXX
 )

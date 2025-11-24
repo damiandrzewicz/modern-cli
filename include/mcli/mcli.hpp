@@ -2,6 +2,7 @@
 #define MCLI_MCLI_HPP
 
 #include "mcli/detail/config.hpp"
+#include "mcli/version.hpp"
 
 #include <span>
 #include <string>
@@ -10,17 +11,6 @@
 
 namespace mcli
 {
-
-struct Version
-{
-    int major;
-    int minor;
-    int patch;
-    std::string_view string;
-};
-
-// Will be defined in moderncli_version.cpp
-[[nodiscard]] const Version& version() noexcept;
 
 // Placeholder main API (we'll expand later)
 class Cli

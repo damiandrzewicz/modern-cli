@@ -1,5 +1,6 @@
 // clang-format off
-#pragma once
+#ifndef MCLI_VERSION_GEN_HPP_IN_
+#define MCLI_VERSION_GEN_HPP_IN_
 
 namespace mcli
 {
@@ -10,4 +11,6 @@ inline constexpr int version_patch = @PROJECT_VERSION_PATCH@;
 inline constexpr const char* version_string = "@PROJECT_VERSION@";
 
 }  // namespace mcli
+
+#endif // MCLI_VERSION_GEN_HPP_IN_
 // clang-format on

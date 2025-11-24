@@ -4,7 +4,7 @@ BasedOnStyle: Google         # Start from LLVM; alternatives: Google, Chromium, 
 # Standard: c++23
 
 # Line wrapping / indentation
-ColumnLimit: 100
+ColumnLimit: 80
 IndentWidth: 4
 TabWidth: 4
 UseTab: Never

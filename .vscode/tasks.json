@@ -19,6 +19,12 @@
       "command": "ctest --preset dev-test",
       "group": "test",
       "problemMatcher": []
+    },
+    {
+      "label": "CMake: coverage (dev)",
+      "type": "shell",
+      "command": "cmake --build --preset dev-build --target coverage",
+      "group": "test"
     }
   ]
 }

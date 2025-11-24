@@ -43,6 +43,15 @@ jobs:
             moderncli-ci:latest \
             ctest --preset dev-test --output-on-failure
 
+      - name: Coverage
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            -e MCLI_ENABLE_COVERAGE=ON \
+            moderncli-ci:latest \
+            cmake --build --preset dev-build --target coverage
+
   clang_tidy:
     runs-on: ubuntu-latest
     needs: build_and_test

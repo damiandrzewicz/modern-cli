@@ -15,6 +15,8 @@ option(MCLI_BUILD_TESTS "Build unit tests" ON)
 option(MCLI_BUILD_EXAMPLES "Build examples" ON)
 option(MCLI_ENABLE_CLANG_TIDY "Enable clang-tidy checks" OFF)
 
+include(cmake/coverage.cmake)
+
 # Global C++ standard
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

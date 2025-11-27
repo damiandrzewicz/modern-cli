@@ -8,14 +8,16 @@
 namespace test::utils
 {
 
-/// Build argc/argv from a vector of strings.
-///
-/// The first element should be the program name (like argv[0]).
-/// The returned argv is null-terminated (argv[argc] == nullptr).
-///
-/// NOTE: This helper owns its internal storage in a static variable so
-/// the returned argv pointers remain valid until the next call.
-/// It's intended for simple, single-threaded test usage.
+/**
+ * @brief Build argc/argv from a vector of strings.
+ *
+ * The first element should be the program name (like argv[0]).
+ * The returned argv is null-terminated (argv[argc] == nullptr).
+ *
+ * NOTE: This helper owns its internal storage in a static variable so
+ * the returned argv pointers remain valid until the next call.
+ * It's intended for simple, single-threaded test usage.
+ */
 inline std::tuple<int, char**> make_argv(std::vector<std::string> args)
 {
     // Static storage to keep strings and pointer array alive.

@@ -1,5 +1,18 @@
 # ModernCLI / mcli
 
+<p align="center">
+	<img src="docs/assets/mcli-logo.svg" alt="ModernCLI logo" width="220" />
+</p>
+
+<p align="center">
+	<a href="https://github.com/damiandrzewicz/modern-cli/actions/workflows/ci.yml">
+		<img src="https://github.com/damiandrzewicz/modern-cli/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI status" />
+	</a>
+	<a href="https://opensource.org/licenses/MIT">
+		<img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT" />
+	</a>
+</p>
+
 ModernCLI (`mcli`) is a modern, header-first C++23 command-line framework.
 
 It focuses on:

@@ -4,6 +4,7 @@
 // #include "mcli/detail/command.hpp"
 #include "mcli/detail/spec/option_spec.hpp"
 
+#include <cassert>
 #include <functional>
 
 namespace mcli::detail::builder
@@ -81,11 +82,28 @@ public:
 
     command_builder& bind(bool& target)
     {
+        validate();
         m_opt.get().target = &target;
         return m_parent.get();
     }
 
 private:
+    void validate() const
+    {
+        const auto& opt = m_opt.get();
+        assert(!opt.name.empty() && "flag must have a name before building");
+        assert(opt.name.rfind("--", 0) == 0 &&
+               "flag name must start with '--'");
+
+        if (!opt.abbr.empty())
+        {
+            assert(opt.abbr.rfind('-', 0) == 0 &&
+                   "flag abbreviation must start with '-'");
+        }
+
+        assert(!opt.desc.empty() && "flag should have help text");
+    }
+
     std::reference_wrapper<command_builder> m_parent;
     std::reference_wrapper<mcli::detail::spec::option_spec> m_opt;
 };

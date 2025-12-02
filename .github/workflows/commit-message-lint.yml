@@ -1,0 +1,49 @@
+name: Commit Message Lint
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  lint-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate commit messages
+        run: |
+          set -euo pipefail
+          PATTERN='^(feat|fix|docs|chore|refactor|test|ci|build|perf|style)(\(.+\))?: .+'
+          BASE_REF="${{ github.base_ref }}"
+          HEAD_REF="${{ github.head_ref }}"
+
+          # Fallbacks for non-PR contexts (shouldn't happen with this trigger)
+          if [ -z "$BASE_REF" ]; then BASE_REF="origin/main"; fi
+          if [ -z "$HEAD_REF" ]; then HEAD_REF="HEAD"; fi
+
+          echo "Checking commits from $BASE_REF..$HEAD_REF"
+          git log --format=%s "$BASE_REF..$HEAD_REF" | while read -r MSG; do
+            if ! printf '%s\n' "$MSG" | grep -Eq "$PATTERN"; then
+              echo "Invalid commit message: $MSG" >&2
+              echo "Expected format: <type>(optional-scope): <short description>" >&2
+              echo "Where <type> is one of: feat, fix, docs, chore, refactor, test, ci, build, perf, style" >&2
+              exit 1
+            fi
+          done
+
+      - name: Validate PR title
+        if: success()
+        run: |
+          set -euo pipefail
+          PATTERN='^(feat|fix|docs|chore|refactor|test|ci|build|perf|style)(\(.+\))?: .+'
+          TITLE='${{ github.event.pull_request.title }}'
+          echo "Checking PR title: $TITLE"
+          if ! printf '%s\n' "$TITLE" | grep -Eq "$PATTERN"; then
+            echo "Invalid PR title: $TITLE" >&2
+            echo "Expected format: <type>(optional-scope): <short description>" >&2
+            echo "Where <type> is one of: feat, fix, docs, chore, refactor, test, ci, build, perf, style" >&2
+            exit 1
+          fi

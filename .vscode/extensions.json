@@ -9,6 +9,7 @@
     "ms-vscode.test-adapter-converter",
     "llvm-vs-code-extensions.vscode-clangd",
     "donjayamanne.githistory",
-    "eamodio.gitlens"
+    "eamodio.gitlens",
+    "mhutchie.git-graph"
   ]
 }

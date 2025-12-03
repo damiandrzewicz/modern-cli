@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+COMMIT_MSG_FILE="$1"
+MSG="$(head -n1 "$COMMIT_MSG_FILE")"
+
+PATTERN_TYPE='^(feat|fix|docs|chore|refactor|test|ci|build|perf|style)(\(.+\))?: .+'
+
+if ! printf '%s\n' "$MSG" | grep -Eq "$PATTERN_TYPE"; then
+    cat >&2 <<EOF
+ERROR: Invalid commit message:
+
+    $MSG
+
+Expected format:
+
+    <type>(optional-scope): <short description>
+
+Where <type> is one of:
+    feat      - a new feature or capability
+    fix       - a bug fix (user-visible behavior was wrong)
+    docs      - documentation-only changes (code behavior unchanged)
+    chore     - maintenance, housekeeping, or non-feature changes
+    refactor  - code changes that neither fix bugs nor add features
+    test      - adding or improving tests without changing production code
+    ci        - changes to CI pipelines or automation
+    build     - changes to build tooling, dependencies, or packaging
+    perf      - performance improvements
+    style     - formatting or style-only changes (no logic changes)
+
+Examples:
+    feat: add short flag support
+    feat(parse): support combined short options
+    fix(parser): handle duplicate options correctly
+    docs(readme): document fluent flag API
+    chore: bump dependencies
+    refactor(parse): extract flag normalization helper
+    test: add coverage for short flag parsing
+    ci: run tests on pull requests
+    build: switch to Ninja generator by default
+    perf: cache normalized option names
+    style: reformat core headers with clang-format
+
+Notes:
+    - <short description> must start with a lowercase letter.
+
+EOF
+    exit 1
+fi
+
+# Enforce that the short description (text after ": ") starts with lowercase.
+DESC="${MSG#*: }"
+FIRST_CHAR="${DESC:0:1}"
+
+if printf '%s' "$FIRST_CHAR" | grep -Eq '[A-Z]'; then
+    cat >&2 <<EOF
+ERROR: Short description should start with lowercase:
+
+    $MSG
+
+Tip:
+    Use e.g. "feat: add short flag support" instead of "feat: Add short flag support".
+EOF
+    exit 1
+fi

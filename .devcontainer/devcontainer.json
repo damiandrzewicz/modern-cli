@@ -4,7 +4,7 @@
   "context": ".",
   "remoteUser": "vscode",
   "features": {},
-  "postCreateCommand": "bash .devcontainer/scripts/install-clangd.sh",
+  "postCreateCommand": "bash .devcontainer/scripts/install-clangd.sh && cd /workspace && git config core.hooksPath tools/hooks",
   "runArgs": [
     "--cap-add=SYS_PTRACE",
     "--security-opt",

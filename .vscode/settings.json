@@ -11,5 +11,13 @@
   "C_Cpp.codeAnalysis.clangTidy.enabled": true,
   "C_Cpp.codeAnalysis.clangTidy.path": "clang-tidy",
   "C_Cpp.codeAnalysis.clangTidy.useBuildPath": true,
-  "C_Cpp.codeAnalysis.clangTidy.buildPath": "build"
+  "C_Cpp.codeAnalysis.clangTidy.buildPath": "build",
+
+    // GitLens AI: generate a single commit message
+  "gitlens.ai.generateCommitMessage.customInstructions": 
+    "Follow the rules described in docs/commits.md for commit messages.",
+
+  // GitLens AI: generate multiple commits
+  "gitlens.ai.generateCommits.customInstructions": 
+    "Follow the rules described in docs/commits.md for commits."
 }

@@ -1,0 +1,67 @@
+name: Commit Message Lint
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  lint-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate commit messages
+        run: |
+          set -euo pipefail
+
+          PATTERN_TYPE='^(feat|fix|docs|chore|refactor|test|ci|build|perf|style)(\(.+\))?: .+'
+
+          BASE_SHA='${{ github.event.pull_request.base.sha }}'
+          HEAD_SHA='${{ github.event.pull_request.head.sha }}'
+
+          echo "Checking commits from $BASE_SHA..$HEAD_SHA"
+          git log --format=%s "$BASE_SHA..$HEAD_SHA" | while read -r MSG; do
+            # Check type/scope pattern
+            if ! printf '%s\n' "$MSG" | grep -Eq "$PATTERN_TYPE"; then
+              echo "Invalid commit message: $MSG" >&2
+              echo "Expected format: <type>(optional-scope): <short description>" >&2
+              echo "Where <type> is one of: feat, fix, docs, chore, refactor, test, ci, build, perf, style" >&2
+              exit 1
+            fi
+
+            # Enforce lowercase short description
+            DESC="${MSG#*: }"
+            FIRST_CHAR="${DESC:0:1}"
+            if printf '%s' "$FIRST_CHAR" | grep -Eq '[A-Z]'; then
+              echo "Invalid commit message: $MSG" >&2
+              echo "Short description should start with lowercase (e.g. 'feat: add flag' not 'feat: Add flag')." >&2
+              exit 1
+            fi
+          done
+
+      - name: Validate PR title
+        if: success()
+        run: |
+          set -euo pipefail
+
+          PATTERN_TYPE='^(feat|fix|docs|chore|refactor|test|ci|build|perf|style)(\(.+\))?: .+'
+          TITLE='${{ github.event.pull_request.title }}'
+          echo "Checking PR title: $TITLE"
+
+          if ! printf '%s\n' "$TITLE" | grep -Eq "$PATTERN_TYPE"; then
+            echo "Invalid PR title: $TITLE" >&2
+            echo "Expected format: <type>(optional-scope): <short description>" >&2
+            echo "Where <type> is one of: feat, fix, docs, chore, refactor, test, ci, build, perf, style" >&2
+            exit 1
+          fi
+
+          DESC="${TITLE#*: }"
+          FIRST_CHAR="${DESC:0:1}"
+          if printf '%s' "$FIRST_CHAR" | grep -Eq '[A-Z]'; then
+            echo "Invalid PR title: $TITLE" >&2
+            echo "Short description should start with lowercase (e.g. 'feat: add flag' not 'feat: Add flag')." >&2
+            exit 1
+          fi

@@ -18,7 +18,7 @@ public:
      */
     flag_builder flag()
     {
-        return flag_builder{*this, m_cmd.add_flag()};
+        return flag_builder{*this, m_cmd};
     }
 
     /**

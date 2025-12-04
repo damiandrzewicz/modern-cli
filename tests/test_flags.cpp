@@ -244,6 +244,79 @@ TEST(Flags, MultipleFlagsSet)
     EXPECT_TRUE(opts.dry_run);
 }
 
+TEST(Flags, DuplicateLongOptionName)
+{
+    struct LocalOpts
+    {
+        bool a = false, b = false;
+    } opts;
+
+    // Attempt to define duplicate long name
+    try
+    {
+        // clang-format off
+        auto cli = mcli::define()
+            .flag()
+                .name("--verbose")
+                .abbr("-v")
+                .help("Enable verbose logging")
+                .bind(opts.a)
+            .flag()
+                .name("--verbose")
+                .abbr("-x")
+                .help("Another verbose")
+                .bind(opts.b)
+            .build();
+        // clang-format on
+
+        (void) cli;
+        FAIL() << "Expected an exception for duplicate long option name";
+    }
+    catch (const std::invalid_argument& ex)
+    {
+        const std::string msg = ex.what();
+        EXPECT_NE(msg.find("duplicate option name: --verbose"),
+                  std::string::npos);
+        EXPECT_NE(msg.find("names must be unique"), std::string::npos);
+    }
+}
+
+TEST(Flags, DuplicateShortOptionAbbreviation)
+{
+    struct LocalOpts
+    {
+        bool a = false, b = false;
+    } opts;
+
+    try
+    {
+        // clang-format off
+        auto cli = mcli::define()
+            .flag()
+                .name("--dry-run")
+                .abbr("-n")
+                .help("Do not perform changes")
+                .bind(opts.a)
+            .flag()
+                .name("--noop")
+                .abbr("-n")
+                .help("No operation")
+                .bind(opts.b)
+            .build();
+        // clang-format on
+
+        (void) cli;
+        FAIL() << "Expected an exception for duplicate option abbreviation";
+    }
+    catch (const std::invalid_argument& ex)
+    {
+        const std::string msg = ex.what();
+        EXPECT_NE(msg.find("duplicate option abbreviation: -n"),
+                  std::string::npos);
+        EXPECT_NE(msg.find("abbreviations must be unique"), std::string::npos);
+    }
+}
+
 TEST(Flags, LongNameWithoutDashes_Throws)
 {
     Options opts;

@@ -84,7 +84,10 @@ private:
             if (opt.name == new_opt.name)
             {
                 throw std::invalid_argument(
-                        "option name must be unique within command");
+                        std::string{"duplicate option name: "} +
+                        std::string{new_opt.name} +
+                        std::string{
+                                " (names must be unique within a command)"});
             }
 
             if (!new_opt.abbr.empty() && !opt.abbr.empty())
@@ -92,8 +95,10 @@ private:
                 if (opt.abbr == new_opt.abbr)
                 {
                     throw std::invalid_argument(
-                            "option abbreviation must be unique within "
-                            "command");
+                            std::string{"duplicate option abbreviation: "} +
+                            std::string{new_opt.abbr} +
+                            std::string{" (abbreviations must be unique within "
+                                        "a command)"});
                 }
             }
         }

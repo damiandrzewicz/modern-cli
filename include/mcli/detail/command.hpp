@@ -1,8 +1,10 @@
 #ifndef MCLI_DETAIL_COMMAND_HPP_
 #define MCLI_DETAIL_COMMAND_HPP_
 
+#include "mcli/detail/spec/flag_spec.hpp"
 #include "mcli/detail/spec/option_spec.hpp"
 
+#include <cassert>
 #include <optional>
 #include <vector>
 
@@ -14,13 +16,19 @@ class command
 public:
     command() = default;
 
-    spec::option_spec& add_flag()
+    void add_flag(spec::flag_spec flag, bool& target)
     {
         spec::option_spec opt;
+        opt.name = std::move(flag.name);
+        opt.abbr = std::move(flag.abbr);
+        opt.desc = std::move(flag.desc);
+        opt.target = &target;
         opt.kind = spec::option_kind::flag;
         opt.vkind = spec::value_kind::boolean;
+
+        assert_option_unique(opt);
+
         m_options.push_back(std::move(opt));
-        return m_options.back();
     }
 
     std::optional<std::reference_wrapper<spec::option_spec>>
@@ -58,6 +66,17 @@ public:
     }
 
 private:
+    void assert_option_unique(const spec::option_spec& new_opt)
+    {
+        for (const auto& opt : m_options)
+        {
+            assert(opt.name != new_opt.name &&
+                   "option name must be unique within command");
+            assert(opt.abbr != new_opt.abbr &&
+                   "option abbreviation must be unique within command");
+        }
+    }
+
     std::vector<spec::option_spec> m_options;
 };
 

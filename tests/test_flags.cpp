@@ -84,7 +84,10 @@ TEST(Flags, UnknownFlag)
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error_code(),
               mcli::detail::parse::parse_error::unknown_option);
-    EXPECT_EQ("Unknown option: --unknown", std::string{result.error_message()});
+    const std::string msg_unknown_long = std::string{result.error_message()};
+    EXPECT_NE(msg_unknown_long.find("Unknown option: --unknown"),
+              std::string::npos);
+    EXPECT_NE(msg_unknown_long.find("Available options:"), std::string::npos);
 }
 
 TEST(Flags, DuplicateFlag)
@@ -107,8 +110,11 @@ TEST(Flags, DuplicateFlag)
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error_code(),
               mcli::detail::parse::parse_error::duplicate_option);
-    EXPECT_EQ("Duplicate option: --dry-run",
-              std::string{result.error_message()});
+    const std::string msg_dup_long = std::string{result.error_message()};
+    EXPECT_NE(msg_dup_long.find("Duplicate option: --dry-run"),
+              std::string::npos);
+    EXPECT_NE(msg_dup_long.find("(option --dry-run/-n already set)"),
+              std::string::npos);
 }
 
 TEST(Flags, ShortFlagSetsValue)
@@ -152,7 +158,9 @@ TEST(Flags, UnknownShortFlag)
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error_code(),
               mcli::detail::parse::parse_error::unknown_option);
-    EXPECT_EQ("Unknown option: -x", std::string{result.error_message()});
+    const std::string msg_unknown_short = std::string{result.error_message()};
+    EXPECT_NE(msg_unknown_short.find("Unknown option: -x"), std::string::npos);
+    EXPECT_NE(msg_unknown_short.find("Available options:"), std::string::npos);
 }
 
 TEST(Flags, DuplicateShortFlag)
@@ -175,7 +183,10 @@ TEST(Flags, DuplicateShortFlag)
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error_code(),
               mcli::detail::parse::parse_error::duplicate_option);
-    EXPECT_EQ("Duplicate option: -n", std::string{result.error_message()});
+    const std::string msg_dup_short = std::string{result.error_message()};
+    EXPECT_NE(msg_dup_short.find("Duplicate option: -n"), std::string::npos);
+    EXPECT_NE(msg_dup_short.find("(option --dry-run/-n already set)"),
+              std::string::npos);
 }
 
 TEST(Flags, LongAndShortDuplicate)
@@ -198,8 +209,12 @@ TEST(Flags, LongAndShortDuplicate)
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error_code(),
               mcli::detail::parse::parse_error::duplicate_option);
-    // message uses the token that caused duplicate detection
-    EXPECT_EQ("Duplicate option: -v", std::string{result.error_message()});
+    // message uses the token that caused duplicate detection and includes
+    // canonical name
+    const std::string msg_dup_mix = std::string{result.error_message()};
+    EXPECT_NE(msg_dup_mix.find("Duplicate option: -v"), std::string::npos);
+    EXPECT_NE(msg_dup_mix.find("(option --verbose/-v already set)"),
+              std::string::npos);
 }
 
 TEST(Flags, MultipleFlagsSet)
@@ -229,78 +244,276 @@ TEST(Flags, MultipleFlagsSet)
     EXPECT_TRUE(opts.dry_run);
 }
 
-TEST(Flags, NormalizesLongNameWithoutDashes)
+TEST(Flags, DuplicateLongOptionName)
 {
-    Options opts;
-
-    // clang-format off
-    auto cli = define()
-        .flag()
-            .name("verbose")           // should normalize to "--verbose"
-            .abbr("-v")
-            .help("Enable verbose logging")
-            .bind(opts.verbose)
-        .build();
-    // clang-format on
-
-    const auto [argc, argv] = make_argv({"app", "--verbose"});
-
-    auto result = cli.parse(argc, argv);
-    ASSERT_TRUE(result);
-    EXPECT_TRUE(result.error_message().empty());
-
-    EXPECT_TRUE(opts.verbose);
-}
-
-TEST(Flags, NormalizesShortNameWithoutDash)
-{
-    Options opts;
-
-    // clang-format off
-    auto cli = define()
-        .flag()
-            .name("--verbose")
-            .abbr("v")                 // should normalize to "-v"
-            .help("Enable verbose logging")
-            .bind(opts.verbose)
-        .build();
-    // clang-format on
-
-    const auto [argc, argv] = make_argv({"app", "-v"});
-
-    auto result = cli.parse(argc, argv);
-    ASSERT_TRUE(result);
-    EXPECT_TRUE(result.error_message().empty());
-    EXPECT_TRUE(opts.verbose);
-}
-
-TEST(Flags, NormalizesLongAndShortNamesTogether)
-{
-    Options opts;
-
-    // clang-format off
-    auto cli = define()
-        .flag()
-            .name("verbose")   // "verbose" -> "--verbose"
-            .abbr("v")         // "v" -> "-v"
-            .help("Enable verbose logging")
-            .bind(opts.verbose)
-        .build();
-    // clang-format on
-
+    struct LocalOpts
     {
-        const auto [argc, argv] = make_argv({"app", "--verbose"});
-        auto result = cli.parse(argc, argv);
-        ASSERT_TRUE(result);
-        EXPECT_TRUE(opts.verbose);
+        bool a = false, b = false;
+    } opts;
+
+    // Attempt to define duplicate long name
+    try
+    {
+        // clang-format off
+        auto cli = mcli::define()
+            .flag()
+                .name("--verbose")
+                .abbr("-v")
+                .help("Enable verbose logging")
+                .bind(opts.a)
+            .flag()
+                .name("--verbose")
+                .abbr("-x")
+                .help("Another verbose")
+                .bind(opts.b)
+            .build();
+        // clang-format on
+
+        (void) cli;
+        FAIL() << "Expected an exception for duplicate long option name";
     }
-
-    // reset and try short form
-    opts.verbose = false;
+    catch (const std::invalid_argument& ex)
     {
-        const auto [argc, argv] = make_argv({"app", "-v"});
-        auto result = cli.parse(argc, argv);
-        ASSERT_TRUE(result);
-        EXPECT_TRUE(opts.verbose);
+        const std::string msg = ex.what();
+        EXPECT_NE(msg.find("duplicate option name: --verbose"),
+                  std::string::npos);
+        EXPECT_NE(msg.find("names must be unique"), std::string::npos);
+    }
+}
+
+TEST(Flags, DuplicateShortOptionAbbreviation)
+{
+    struct LocalOpts
+    {
+        bool a = false, b = false;
+    } opts;
+
+    try
+    {
+        // clang-format off
+        auto cli = mcli::define()
+            .flag()
+                .name("--dry-run")
+                .abbr("-n")
+                .help("Do not perform changes")
+                .bind(opts.a)
+            .flag()
+                .name("--noop")
+                .abbr("-n")
+                .help("No operation")
+                .bind(opts.b)
+            .build();
+        // clang-format on
+
+        (void) cli;
+        FAIL() << "Expected an exception for duplicate option abbreviation";
+    }
+    catch (const std::invalid_argument& ex)
+    {
+        const std::string msg = ex.what();
+        EXPECT_NE(msg.find("duplicate option abbreviation: -n"),
+                  std::string::npos);
+        EXPECT_NE(msg.find("abbreviations must be unique"), std::string::npos);
+    }
+}
+
+TEST(Flags, LongNameWithoutDashes_Throws)
+{
+    Options opts;
+
+    try
+    {
+        // clang-format off
+        auto cli = define()
+            .flag()
+                .name("DryRun")
+                .help("...")
+                .bind(opts.verbose)
+            .build();
+        // clang-format on
+
+        FAIL() << "Expected an exception for invalid long flag name, but none "
+                  "was thrown";
+    }
+    catch (const std::invalid_argument& ex)
+    {
+        EXPECT_EQ(std::string{ex.what()}, "flag name must start with \"--\"");
+    }
+    catch (...)
+    {
+        FAIL() << "Expected std::invalid_argument for invalid long flag name";
+    }
+}
+
+TEST(Flags, LongNameDashesOnly_Throws)
+{
+    Options opts;
+
+    try
+    {
+        // clang-format off
+        auto cli = define()
+            .flag()
+                .name("--")
+                .help("...")
+                .bind(opts.verbose)
+            .build();
+        // clang-format on
+
+        FAIL() << "Expected an exception for invalid long flag name, but none "
+                  "was thrown";
+    }
+    catch (const std::invalid_argument& ex)
+    {
+        EXPECT_EQ(std::string{ex.what()},
+                  "flag name must start with \"--\" followed by a non-dash "
+                  "character");
+    }
+    catch (...)
+    {
+        FAIL() << "Expected std::invalid_argument for invalid long flag name";
+    }
+}
+
+TEST(Flags, LongNameSingleDash_Throws)
+{
+    Options opts;
+
+    try
+    {
+        // clang-format off
+        auto cli = define()
+            .flag()
+                .name("-verbose")
+                .help("...")
+                .bind(opts.verbose)
+            .build();
+        // clang-format on
+
+        FAIL() << "Expected an exception for invalid long flag name, but none "
+                  "was thrown";
+    }
+    catch (const std::invalid_argument& ex)
+    {
+        EXPECT_EQ(std::string{ex.what()}, "flag name must start with \"--\"");
+    }
+    catch (...)
+    {
+        FAIL() << "Expected std::invalid_argument for invalid long flag name";
+    }
+}
+
+TEST(Flags, LongNameLikeAbbr_Throws)
+{
+    Options opts;
+
+    try
+    {
+        // clang-format off
+        auto cli = define()
+            .flag()
+                .name("-v")
+                .help("...")
+                .bind(opts.verbose)
+            .build();
+        // clang-format on
+
+        FAIL() << "Expected an exception for invalid long flag name, but none "
+                  "was thrown";
+    }
+    catch (const std::invalid_argument& ex)
+    {
+        EXPECT_EQ(std::string{ex.what()},
+                  "flag name must start with \"--\" followed by a non-dash "
+                  "character");
+    }
+    catch (...)
+    {
+        FAIL() << "Expected std::invalid_argument for invalid long flag name";
+    }
+}
+
+TEST(Flags, LongNameMultipleDashes_Throws)
+{
+    Options opts;
+
+    try
+    {
+        // clang-format off
+        auto cli = define()
+            .flag()
+                .name("---verbose")
+                .help("...")
+                .bind(opts.verbose)
+            .build();
+        // clang-format on
+
+        FAIL() << "Expected an exception for invalid long flag name, but none "
+                  "was thrown";
+    }
+    catch (const std::invalid_argument& ex)
+    {
+        EXPECT_EQ(std::string{ex.what()},
+                  "flag name cannot start with more than 2 \"-\"");
+    }
+    catch (...)
+    {
+        FAIL() << "Expected std::invalid_argument for invalid long flag name";
+    }
+}
+
+TEST(Flags, MissingName_Throws)
+{
+    Options opts;
+
+    try
+    {
+        // clang-format off
+        auto cli = define()
+            .flag()
+                .help("...")
+                .bind(opts.verbose)
+            .build();
+        // clang-format on
+
+        FAIL() << "Expected an exception for missing long flag name, but none "
+                  "was thrown";
+    }
+    catch (const std::invalid_argument& ex)
+    {
+        EXPECT_EQ(std::string{ex.what()},
+                  "flag must have a name before binding to a target");
+    }
+    catch (...)
+    {
+        FAIL() << "Expected std::invalid_argument for missing long flag name";
+    }
+}
+
+TEST(Flags, MissingHelp_Throws)
+{
+    Options opts;
+
+    try
+    {
+        // clang-format off
+        auto cli = define()
+            .flag()
+                .name("--verbose")
+                .bind(opts.verbose)
+            .build();
+        // clang-format on
+
+        FAIL() << "Expected an exception for missing help text, but none was "
+                  "thrown";
+    }
+    catch (const std::invalid_argument& ex)
+    {
+        EXPECT_EQ(std::string{ex.what()},
+                  "option \"--verbose\" should have help text");
+    }
+    catch (...)
+    {
+        FAIL() << "Expected std::invalid_argument for missing help text";
     }
 }

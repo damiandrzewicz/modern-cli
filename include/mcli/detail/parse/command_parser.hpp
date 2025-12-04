@@ -64,24 +64,76 @@ private:
         // Option (flag)
         if (!option.has_value())
         {
-            result = parse_result::failure(
-                    parse_error::unknown_option,
-                    "Unknown option: " + std::string{tok});
+        result = parse_result::failure(
+            parse_error::unknown_option,
+            build_unknown_option_message(tok));
             return false;
         }
 
         auto& opt = option->get();
         if (opt.seen)
         {
-            result = parse_result::failure(
-                    parse_error::duplicate_option,
-                    "Duplicate option: " + std::string{tok});
+        result = parse_result::failure(
+            parse_error::duplicate_option,
+            build_duplicate_option_message(tok, opt));
             return false;
         }
 
         opt.seen = true;
 
         return apply_option(opt, result);
+    }
+
+    std::string build_unknown_option_message(std::string_view tok) const
+    {
+        std::string msg = "Unknown option: ";
+        msg += tok;
+
+        // Append available options for better guidance
+        const auto& opts = m_cmd.options();
+        if (!opts.empty())
+        {
+            msg += ". Available options: ";
+            bool first = true;
+            for (const auto& opt_item : opts)
+            {
+                if (!first)
+                {
+                    msg += "; ";
+                }
+                first = false;
+
+                msg += opt_item.name;
+                if (!opt_item.abbr.empty())
+                {
+                    msg += " (";
+                    msg += opt_item.abbr;
+                    msg += ")";
+                }
+                if (!opt_item.desc.empty())
+                {
+                    msg += ": ";
+                    msg += opt_item.desc;
+                }
+            }
+        }
+        return msg;
+    }
+
+    static std::string build_duplicate_option_message(std::string_view tok,
+                                                      const spec::option_spec& opt)
+    {
+        std::string msg = "Duplicate option: ";
+        msg += tok;
+        msg += " (option ";
+        msg += opt.name;
+        if (!opt.abbr.empty())
+        {
+            msg += "/";
+            msg += opt.abbr;
+        }
+        msg += " already set)";
+        return msg;
     }
 
     static bool apply_option(spec::option_spec& opt, parse_result& /*result*/)

@@ -4,8 +4,8 @@
 #include "mcli/detail/spec/flag_spec.hpp"
 #include "mcli/detail/spec/option_spec.hpp"
 
-#include <cassert>
 #include <optional>
+#include <stdexcept>
 #include <vector>
 
 namespace mcli::detail
@@ -26,9 +26,7 @@ public:
         opt.kind = spec::option_kind::flag;
         opt.vkind = spec::value_kind::boolean;
 
-        assert_option_unique(opt);
-
-        m_options.push_back(std::move(opt));
+        append_option(std::move(opt));
     }
 
     std::optional<std::reference_wrapper<spec::option_spec>>
@@ -65,15 +63,80 @@ public:
         }
     }
 
+    // Read-only access to defined options for diagnostics
+    const std::vector<spec::option_spec>& options() const noexcept
+    {
+        return m_options;
+    }
+
 private:
+    void append_option(spec::option_spec opt)
+    {
+        assert_option_unique(opt);
+        validate(opt);
+        m_options.push_back(std::move(opt));
+    }
+
     void assert_option_unique(const spec::option_spec& new_opt)
     {
         for (const auto& opt : m_options)
         {
-            assert(opt.name != new_opt.name &&
-                   "option name must be unique within command");
-            assert(opt.abbr != new_opt.abbr &&
-                   "option abbreviation must be unique within command");
+            if (opt.name == new_opt.name)
+            {
+                throw std::invalid_argument(
+                        std::string{"duplicate option name: "} +
+                        std::string{new_opt.name} +
+                        std::string{
+                                " (names must be unique within a command)"});
+            }
+
+            if (!new_opt.abbr.empty() && !opt.abbr.empty())
+            {
+                if (opt.abbr == new_opt.abbr)
+                {
+                    throw std::invalid_argument(
+                            std::string{"duplicate option abbreviation: "} +
+                            std::string{new_opt.abbr} +
+                            std::string{" (abbreviations must be unique within "
+                                        "a command)"});
+                }
+            }
+        }
+    }
+
+    static void validate(const spec::option_spec& opt)
+    {
+        if (opt.name.empty())
+        {
+            std::string msg{"option must have a name"};
+            if (!opt.abbr.empty())
+            {
+                msg += " (provided abbreviation \"";
+                msg += std::string{opt.abbr};
+                msg += "\" without a long name)";
+            }
+            if (!opt.desc.empty())
+            {
+                msg += "; help: \"";
+                msg += std::string{opt.desc};
+                msg += "\"";
+            }
+            throw std::invalid_argument(msg);
+        }
+
+        if (opt.desc.empty())
+        {
+            std::string msg{"option "};
+            msg += '"';
+            msg += std::string{opt.name};
+            msg += '"';
+            if (!opt.abbr.empty())
+            {
+                msg += "/";
+                msg += std::string{opt.abbr};
+            }
+            msg += " should have help text";
+            throw std::invalid_argument(msg);
         }
     }
 

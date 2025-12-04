@@ -5,51 +5,11 @@
 #include "mcli/detail/spec/flag_spec.hpp"
 #include "mcli/detail/spec/option_spec.hpp"
 
-#include <cassert>
 #include <functional>
+#include <stdexcept>
 
 namespace mcli::detail::builder
 {
-
-namespace
-{
-
-inline std::string normalize_long_name(std::string_view name)
-{
-    if (name.empty())
-    {
-        return {};
-    }
-
-    if (name.rfind("--", 0) == 0)  // already starts with "--"
-    {
-        return std::string{name};
-    }
-
-    // optional: allow a single '-' and upgrade to '--'?
-    // if (name.front() == '-' && name.size() > 1 && name[1] != '-')
-    //     return std::string{"--"} + std::string{name.substr(1)};
-
-    return std::string{"--"} + std::string{name};
-}
-
-inline std::string normalize_short_name(std::string_view abbr)
-{
-    if (abbr.empty())
-    {
-        return {};
-    }
-
-    if (abbr.rfind('-', 0) == 0)  // already starts with '-'
-    {
-        // optional: reject "--" here since that's a long option shape
-        return std::string{abbr};
-    }
-
-    return std::string{"-"} + std::string{abbr};
-}
-
-}  // namespace
 
 class command_builder;
 
@@ -63,13 +23,31 @@ public:
 
     flag_builder& name(std::string_view name)
     {
-        m_flag.name = normalize_long_name(name);
+        if (name.size() < 3)
+        {
+            throw std::invalid_argument(
+                    "flag name must start with \"--\" followed by a non-dash "
+                    "character");
+        }
+
+        if (name[0] != '-' || name[1] != '-')
+        {
+            throw std::invalid_argument("flag name must start with \"--\"");
+        }
+
+        if (name[2] == '-')
+        {
+            throw std::invalid_argument(
+                    "flag name cannot start with more than 2 \"-\"");
+        }
+
+        m_flag.name.assign(name.begin(), name.end());
         return *this;
     }
 
     flag_builder& abbr(std::string_view abbr)
     {
-        m_flag.abbr = normalize_short_name(abbr);
+        m_flag.abbr.assign(abbr.begin(), abbr.end());
         return *this;
     }
 
@@ -81,20 +59,17 @@ public:
 
     command_builder& bind(bool& target)
     {
-        validate();
+        if (m_flag.name.empty())
+        {
+            throw std::invalid_argument(
+                    "flag must have a name before binding to a target");
+        }
 
         m_cmd.get().add_flag(std::move(m_flag), target);
-
         return m_parent.get();
     }
 
 private:
-    void validate() const
-    {
-        assert(!m_flag.name.empty() && "flag must have a name before building");
-        assert(!m_flag.desc.empty() && "flag should have help text");
-    }
-
     std::reference_wrapper<command_builder> m_parent;
     std::reference_wrapper<mcli::detail::command> m_cmd;
 

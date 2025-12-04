@@ -4,8 +4,8 @@
 #include "mcli/detail/spec/flag_spec.hpp"
 #include "mcli/detail/spec/option_spec.hpp"
 
-#include <cassert>
 #include <optional>
+#include <stdexcept>
 #include <vector>
 
 namespace mcli::detail
@@ -26,9 +26,7 @@ public:
         opt.kind = spec::option_kind::flag;
         opt.vkind = spec::value_kind::boolean;
 
-        assert_option_unique(opt);
-
-        m_options.push_back(std::move(opt));
+        append_option(std::move(opt));
     }
 
     std::optional<std::reference_wrapper<spec::option_spec>>
@@ -65,19 +63,52 @@ public:
         }
     }
 
+    // Read-only access to defined options for diagnostics
+    const std::vector<spec::option_spec>& options() const noexcept
+    {
+        return m_options;
+    }
+
 private:
+    void append_option(spec::option_spec opt)
+    {
+        assert_option_unique(opt);
+        validate(opt);
+        m_options.push_back(std::move(opt));
+    }
+
     void assert_option_unique(const spec::option_spec& new_opt)
     {
         for (const auto& opt : m_options)
         {
-            assert(opt.name != new_opt.name &&
-                   "option name must be unique within command");
+            if (opt.name == new_opt.name)
+            {
+                throw std::invalid_argument(
+                        "option name must be unique within command");
+            }
 
             if (!new_opt.abbr.empty() && !opt.abbr.empty())
             {
-                assert(opt.abbr != new_opt.abbr &&
-                       "option abbreviation must be unique within command");
+                if (opt.abbr == new_opt.abbr)
+                {
+                    throw std::invalid_argument(
+                            "option abbreviation must be unique within "
+                            "command");
+                }
             }
+        }
+    }
+
+    static void validate(const spec::option_spec& opt)
+    {
+        if (opt.name.empty())
+        {
+            throw std::invalid_argument("option must have a name");
+        }
+
+        if (opt.desc.empty())
+        {
+            throw std::invalid_argument("option should have help text");
         }
     }
 

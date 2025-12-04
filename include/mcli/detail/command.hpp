@@ -72,8 +72,12 @@ private:
         {
             assert(opt.name != new_opt.name &&
                    "option name must be unique within command");
-            assert(opt.abbr != new_opt.abbr &&
-                   "option abbreviation must be unique within command");
+
+            if (!new_opt.abbr.empty() && !opt.abbr.empty())
+            {
+                assert(opt.abbr != new_opt.abbr &&
+                       "option abbreviation must be unique within command");
+            }
         }
     }
 

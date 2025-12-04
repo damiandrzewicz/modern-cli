@@ -108,12 +108,35 @@ private:
     {
         if (opt.name.empty())
         {
-            throw std::invalid_argument("option must have a name");
+            std::string msg{"option must have a name"};
+            if (!opt.abbr.empty())
+            {
+                msg += " (provided abbreviation \"";
+                msg += std::string{opt.abbr};
+                msg += "\" without a long name)";
+            }
+            if (!opt.desc.empty())
+            {
+                msg += "; help: \"";
+                msg += std::string{opt.desc};
+                msg += "\"";
+            }
+            throw std::invalid_argument(msg);
         }
 
         if (opt.desc.empty())
         {
-            throw std::invalid_argument("option should have help text");
+            std::string msg{"option "};
+            msg += '"';
+            msg += std::string{opt.name};
+            msg += '"';
+            if (!opt.abbr.empty())
+            {
+                msg += "/";
+                msg += std::string{opt.abbr};
+            }
+            msg += " should have help text";
+            throw std::invalid_argument(msg);
         }
     }
 

@@ -509,7 +509,8 @@ TEST(Flags, MissingHelp_Throws)
     }
     catch (const std::invalid_argument& ex)
     {
-        EXPECT_EQ(std::string{ex.what()}, "option should have help text");
+        EXPECT_EQ(std::string{ex.what()},
+                  "option \"--verbose\" should have help text");
     }
     catch (...)
     {

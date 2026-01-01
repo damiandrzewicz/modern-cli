@@ -5,7 +5,7 @@
       "name": "Debug moderncli_tests",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/tests/moderncli_tests",
+      "program": "${workspaceFolder}/build/tests/mcli_tests",
       "args": [],
       "cwd": "${workspaceFolder}",
       "MIMode": "gdb",

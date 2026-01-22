@@ -337,7 +337,9 @@ TEST(Flags, LongNameWithoutDashes_Throws)
     }
     catch (const std::invalid_argument& ex)
     {
-        EXPECT_EQ(std::string{ex.what()}, "flag name must start with \"--\"");
+        EXPECT_EQ(std::string{ex.what()},
+                  "flag name must start with \"--\" followed by a non-dash "
+                  "character");
     }
     catch (...)
     {
@@ -395,7 +397,9 @@ TEST(Flags, LongNameSingleDash_Throws)
     }
     catch (const std::invalid_argument& ex)
     {
-        EXPECT_EQ(std::string{ex.what()}, "flag name must start with \"--\"");
+        EXPECT_EQ(std::string{ex.what()},
+                  "flag name must start with \"--\" followed by a non-dash "
+                  "character");
     }
     catch (...)
     {
@@ -482,7 +486,7 @@ TEST(Flags, MissingName_Throws)
     catch (const std::invalid_argument& ex)
     {
         EXPECT_EQ(std::string{ex.what()},
-                  "flag must have a name before binding to a target");
+                  "option must have a name; help: \"...\"");
     }
     catch (...)
     {

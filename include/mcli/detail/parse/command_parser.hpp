@@ -20,16 +20,16 @@ public:
     {
         parse_result result = parse_result::success();
 
-        reset_seen_flags();
+        reset_seen_options();
         parse_range(argc, argv, 1, result);
 
         return result;
     }
 
 private:
-    void reset_seen_flags()
+    void reset_seen_options()
     {
-        m_cmd.reset_seen_flags();
+        m_cmd.reset_seen_options();
     }
 
     void parse_range(int argc,
@@ -64,18 +64,17 @@ private:
         // Option (flag)
         if (!option.has_value())
         {
-        result = parse_result::failure(
-            parse_error::unknown_option,
-            build_unknown_option_message(tok));
+            result = parse_result::failure(parse_error::unknown_option,
+                                           build_unknown_option_message(tok));
             return false;
         }
 
         auto& opt = option->get();
         if (opt.seen)
         {
-        result = parse_result::failure(
-            parse_error::duplicate_option,
-            build_duplicate_option_message(tok, opt));
+            result = parse_result::failure(
+                    parse_error::duplicate_option,
+                    build_duplicate_option_message(tok, opt));
             return false;
         }
 
@@ -120,8 +119,8 @@ private:
         return msg;
     }
 
-    static std::string build_duplicate_option_message(std::string_view tok,
-                                                      const spec::option_spec& opt)
+    static std::string build_duplicate_option_message(
+            std::string_view tok, const spec::option_spec& opt)
     {
         std::string msg = "Duplicate option: ";
         msg += tok;

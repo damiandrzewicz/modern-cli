@@ -17,7 +17,7 @@ struct Options
 
 }  // namespace
 
-TEST(Flags, DefaultValues)
+TEST(FlagsOptions, DefaultValues)
 {
     Options opts;
 
@@ -40,7 +40,7 @@ TEST(Flags, DefaultValues)
     EXPECT_FALSE(opts.dry_run);
 }
 
-TEST(Flags, SingleFlagSet)
+TEST(FlagsOptions, SingleFlagsOptionset)
 {
     Options opts;
 
@@ -64,7 +64,7 @@ TEST(Flags, SingleFlagSet)
     EXPECT_FALSE(opts.dry_run);
 }
 
-TEST(Flags, UnknownFlag)
+TEST(FlagsOptions, UnknownFlag)
 {
     Options opts;
 
@@ -90,7 +90,7 @@ TEST(Flags, UnknownFlag)
     EXPECT_NE(msg_unknown_long.find("Available options:"), std::string::npos);
 }
 
-TEST(Flags, DuplicateFlag)
+TEST(FlagsOptions, DuplicateFlag)
 {
     Options opts;
 
@@ -117,7 +117,7 @@ TEST(Flags, DuplicateFlag)
               std::string::npos);
 }
 
-TEST(Flags, ShortFlagSetsValue)
+TEST(FlagsOptions, ShortFlagsOptionsetsValue)
 {
     Options opts;
 
@@ -138,7 +138,7 @@ TEST(Flags, ShortFlagSetsValue)
     EXPECT_TRUE(opts.verbose);
 }
 
-TEST(Flags, UnknownShortFlag)
+TEST(FlagsOptions, UnknownShortFlag)
 {
     Options opts;
 
@@ -163,7 +163,7 @@ TEST(Flags, UnknownShortFlag)
     EXPECT_NE(msg_unknown_short.find("Available options:"), std::string::npos);
 }
 
-TEST(Flags, DuplicateShortFlag)
+TEST(FlagsOptions, DuplicateShortFlag)
 {
     Options opts;
 
@@ -189,7 +189,7 @@ TEST(Flags, DuplicateShortFlag)
               std::string::npos);
 }
 
-TEST(Flags, LongAndShortDuplicate)
+TEST(FlagsOptions, LongAndShortDuplicate)
 {
     Options opts;
 
@@ -217,7 +217,7 @@ TEST(Flags, LongAndShortDuplicate)
               std::string::npos);
 }
 
-TEST(Flags, MultipleFlagsSet)
+TEST(FlagsOptions, MultipleFlagsOptionsSet)
 {
     Options opts;
 
@@ -244,7 +244,7 @@ TEST(Flags, MultipleFlagsSet)
     EXPECT_TRUE(opts.dry_run);
 }
 
-TEST(Flags, DuplicateLongOptionName)
+TEST(FlagsOptions, DuplicateLongOptionName)
 {
     struct LocalOpts
     {
@@ -281,7 +281,7 @@ TEST(Flags, DuplicateLongOptionName)
     }
 }
 
-TEST(Flags, DuplicateShortOptionAbbreviation)
+TEST(FlagsOptions, DuplicateShortOptionAbbreviation)
 {
     struct LocalOpts
     {
@@ -317,7 +317,7 @@ TEST(Flags, DuplicateShortOptionAbbreviation)
     }
 }
 
-TEST(Flags, LongNameWithoutDashes_Throws)
+TEST(FlagsOptions, LongNameWithoutDashes_Throws)
 {
     Options opts;
 
@@ -347,7 +347,7 @@ TEST(Flags, LongNameWithoutDashes_Throws)
     }
 }
 
-TEST(Flags, LongNameDashesOnly_Throws)
+TEST(FlagsOptions, LongNameDashesOnly_Throws)
 {
     Options opts;
 
@@ -377,7 +377,7 @@ TEST(Flags, LongNameDashesOnly_Throws)
     }
 }
 
-TEST(Flags, LongNameSingleDash_Throws)
+TEST(FlagsOptions, LongNameSingleDash_Throws)
 {
     Options opts;
 
@@ -407,7 +407,7 @@ TEST(Flags, LongNameSingleDash_Throws)
     }
 }
 
-TEST(Flags, LongNameLikeAbbr_Throws)
+TEST(FlagsOptions, LongNameLikeAbbr_Throws)
 {
     Options opts;
 
@@ -437,7 +437,7 @@ TEST(Flags, LongNameLikeAbbr_Throws)
     }
 }
 
-TEST(Flags, LongNameMultipleDashes_Throws)
+TEST(FlagsOptions, LongNameMultipleDashes_Throws)
 {
     Options opts;
 
@@ -466,7 +466,7 @@ TEST(Flags, LongNameMultipleDashes_Throws)
     }
 }
 
-TEST(Flags, MissingName_Throws)
+TEST(FlagsOptions, MissingName_Throws)
 {
     Options opts;
 
@@ -494,7 +494,7 @@ TEST(Flags, MissingName_Throws)
     }
 }
 
-TEST(Flags, MissingHelp_Throws)
+TEST(FlagsOptions, MissingHelp_Throws)
 {
     Options opts;
 

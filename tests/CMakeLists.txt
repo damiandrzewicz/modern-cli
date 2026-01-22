@@ -20,7 +20,7 @@ CPMAddPackage(
 
 add_executable(mcli_tests
     test_version.cpp
-    test_flags.cpp
+    test_flags_options.cpp
     test_args_options.cpp
 )
 

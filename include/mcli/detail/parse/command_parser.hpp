@@ -6,15 +6,25 @@
 #include "mcli/detail/spec/option_spec.hpp"
 
 #include <cassert>
+#include <charconv>
+#include <limits>
 #include <span>
+#include <string>
 
 namespace mcli::detail::parse
 {
 
+struct raw_option_value
+{
+    std::string_view text;
+};
+
 class command_parser
 {
 public:
-    command_parser(mcli::detail::command&& cmd) : m_cmd{std::move(cmd)} {}
+    explicit command_parser(mcli::detail::command&& cmd) : m_cmd{std::move(cmd)}
+    {
+    }
 
     [[nodiscard]] parse_result parse(int argc, char** argv)
     {
@@ -38,30 +48,104 @@ private:
                      parse_result& result)
     {
         std::span<char*> args(argv, static_cast<std::size_t>(argc));
-        for (char* arg : args.subspan(static_cast<std::size_t>(start_index)))
+        bool only_positionals = false;
+
+        for (auto idx = static_cast<std::size_t>(start_index);
+             idx < args.size();
+             ++idx)
         {
-            std::string_view tok{arg};
-            if (!handle_token(tok, result))
+            std::string_view tok{args[idx]};
+
+            if (tok == "--")
+            {
+                only_positionals = true;
+                continue;
+            }
+
+            if (!only_positionals && looks_like_compact_short_option(tok))
+            {
+                result = parse_result::failure(
+                        parse_error::unknown_option,
+                        build_unknown_option_message(tok));
+                return;
+            }
+
+            if (only_positionals || !is_option_token(tok))
+            {
+                // Positional parsing is a future feature.
+                // For now: accept and ignore positional tokens.
+                continue;
+            }
+
+            // Option parsing
+            if (!handle_option_token(args, idx, tok, result))
             {
                 return;
             }
         }
     }
 
-    bool handle_token(std::string_view tok, parse_result& result)
+    static bool looks_like_compact_short_option(std::string_view tok)
+    {
+        // Reject POSIX-style compact forms like -p8080.
+        // Allowed short option tokens are exactly "-x".
+        return tok.size() > 2 && tok.starts_with("-") && !tok.starts_with("--");
+    }
+
+    static bool is_option_token(std::string_view tok)
+    {
+        if (tok.empty() || tok == "-")
+        {
+            return false;
+        }
+
+        // Long option: --name or --name=value
+        if (tok.starts_with("--"))
+        {
+            return tok.size() > 2;
+        }
+
+        // Short option: -x (exactly 2 chars). No clusters, no -p8080.
+        if (tok.starts_with("-"))
+        {
+            return tok.size() == 2;
+        }
+
+        return false;
+    }
+
+    bool handle_option_token(std::span<char*> args,
+                             std::size_t& idx,
+                             std::string_view tok,
+                             parse_result& result)
     {
         if (tok.empty())
         {
             return true;
         }
 
-        auto option = m_cmd.find_option_by_name(tok);
-        if (!option.has_value())
+        // Split --name=value
+        std::string_view key = tok;
+        std::string_view value;
+        bool has_inline_value = false;
+
+        if (tok.starts_with("--"))
         {
-            option = m_cmd.find_option_by_abbr(tok);
+            const auto eq_pos = tok.find('=');
+            if (eq_pos != std::string_view::npos)
+            {
+                key = tok.substr(0, eq_pos);
+                value = tok.substr(eq_pos + 1);
+                has_inline_value = true;
+            }
         }
 
-        // Option (flag)
+        auto option = m_cmd.find_option_by_name(key);
+        if (!option.has_value())
+        {
+            option = m_cmd.find_option_by_abbr(key);
+        }
+
         if (!option.has_value())
         {
             result = parse_result::failure(parse_error::unknown_option,
@@ -74,13 +158,59 @@ private:
         {
             result = parse_result::failure(
                     parse_error::duplicate_option,
-                    build_duplicate_option_message(tok, opt));
+                    build_duplicate_option_message(key, opt));
             return false;
         }
 
         opt.seen = true;
 
-        return apply_option(opt, result);
+        // Flags take no values
+        if (opt.kind == spec::option_kind::flag)
+        {
+            if (has_inline_value)
+            {
+                result = parse_result::failure(
+                        parse_error::unexpected_value,
+                        std::string{"flag does not take a value: "} +
+                                std::string{key});
+                return false;
+            }
+            return apply_option(opt, result);
+        }
+
+        // Args require a value
+        if (opt.kind == spec::option_kind::arg)
+        {
+            if (!has_inline_value)
+            {
+                // Expect next token as value
+                if (idx + 1 >= args.size())
+                {
+                    result = parse_result::failure(
+                            parse_error::missing_value,
+                            std::string{"missing value for option: "} +
+                                    std::string{key});
+                    return false;
+                }
+
+                std::string_view next_tok{args[idx + 1]};
+                if (next_tok == "--")
+                {
+                    result = parse_result::failure(
+                            parse_error::missing_value,
+                            std::string{"missing value for option: "} +
+                                    std::string{key});
+                    return false;
+                }
+                value = next_tok;
+                ++idx;  // consume value token
+            }
+
+            return apply_arg_value(opt, key, raw_option_value{value}, result);
+        }
+
+        assert(false && "unknown option kind");
+        return false;
     }
 
     std::string build_unknown_option_message(std::string_view tok) const
@@ -146,12 +276,129 @@ private:
                 apply_flag(opt);
                 return true;
             }
+            case option_kind::arg:
+            {
+                // Value options are handled in handle_option_token.
+                return true;
+            }
             default:
             {
                 assert(false && "unknown option kind");
                 return false;
             }
         }
+    }
+
+    static bool apply_arg_value(spec::option_spec& opt,
+                                std::string_view option_key,
+                                raw_option_value raw_value,
+                                parse_result& result)
+    {
+        using namespace mcli::detail::spec;
+
+        switch (opt.vkind)
+        {
+            case value_kind::string:
+            {
+                if (auto* ptr = std::get_if<std::string*>(&opt.target))
+                {
+                    assert(*ptr != nullptr);
+                    **ptr = std::string{raw_value.text};
+                    return true;
+                }
+                break;
+            }
+            case value_kind::integer:
+            {
+                return apply_integer_target(opt, option_key, raw_value, result);
+            }
+            default:
+                break;
+        }
+
+        result = parse_result::failure(
+                parse_error::invalid_value,
+                std::string{"unsupported target type for option: "} +
+                        std::string{option_key});
+        return false;
+    }
+
+    static bool apply_integer_target(spec::option_spec& opt,
+                                     std::string_view option_key,
+                                     raw_option_value raw_value,
+                                     parse_result& result)
+    {
+        auto fail = [&](std::string msg)
+        {
+            result = parse_result::failure(parse_error::invalid_value,
+                                           std::move(msg));
+            return false;
+        };
+
+        auto parse_i64 = [&](std::int64_t& out)
+        {
+            const char* begin = raw_value.text.data();
+            const char* end = raw_value.text.data() + raw_value.text.size();
+            auto [p, ec] = std::from_chars(begin, end, out);
+            return ec == std::errc{} && p == end;
+        };
+
+        std::int64_t parsed_value = 0;
+        if (!parse_i64(parsed_value))
+        {
+            std::string msg = "Invalid integer for ";
+            msg += option_key;
+            msg += ": \"";
+            msg += std::string{raw_value.text};
+            msg += "\"";
+            return fail(std::move(msg));
+        }
+
+        if (auto* ptr = std::get_if<std::int64_t*>(&opt.target))
+        {
+            assert(*ptr != nullptr);
+            **ptr = parsed_value;
+            return true;
+        }
+
+        if (auto* ptr = std::get_if<std::int32_t*>(&opt.target))
+        {
+            assert(*ptr != nullptr);
+            if (parsed_value < std::numeric_limits<std::int32_t>::min() ||
+                parsed_value > std::numeric_limits<std::int32_t>::max())
+            {
+                std::string msg = "Integer out of range for ";
+                msg += option_key;
+                msg += ": \"";
+                msg += std::string{raw_value.text};
+                msg += "\"";
+                return fail(std::move(msg));
+            }
+            **ptr = static_cast<std::int32_t>(parsed_value);
+            return true;
+        }
+
+        if (auto* ptr = std::get_if<std::uint64_t*>(&opt.target))
+        {
+            assert(*ptr != nullptr);
+            if (parsed_value < 0)
+            {
+                std::string msg = "Invalid integer for ";
+                msg += option_key;
+                msg += ": \"";
+                msg += std::string{raw_value.text};
+                msg += "\"";
+                return fail(std::move(msg));
+            }
+            **ptr = static_cast<std::uint64_t>(parsed_value);
+            return true;
+        }
+
+        result = parse_result::failure(
+                parse_error::invalid_value,
+                std::string{"unsupported target type for option: "} +
+                        std::string{option_key});
+        return false;
     }
 
     // Apply flag behavior.

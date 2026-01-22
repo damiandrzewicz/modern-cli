@@ -21,7 +21,7 @@ CPMAddPackage(
 add_executable(mcli_tests
     test_version.cpp
     test_flags.cpp
-    arg_flags.cpp
+    test_args_options.cpp
 )
 
 target_link_libraries(mcli_tests

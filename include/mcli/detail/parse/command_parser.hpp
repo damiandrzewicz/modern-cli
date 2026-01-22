@@ -394,6 +394,104 @@ private:
             return true;
         }
 
+        if (auto* ptr = std::get_if<std::uint32_t*>(&opt.target))
+        {
+            assert(*ptr != nullptr);
+            if (parsed_value < 0 ||
+                parsed_value >
+                        static_cast<std::int64_t>(
+                                std::numeric_limits<std::uint32_t>::max()))
+            {
+                std::string msg = "Integer out of range for ";
+                msg += option_key;
+                msg += ": \"";
+                msg += std::string{raw_value.text};
+                msg += "\"";
+                return fail(std::move(msg));
+            }
+            **ptr = static_cast<std::uint32_t>(parsed_value);
+            return true;
+        }
+
+        if (auto* ptr = std::get_if<std::uint16_t*>(&opt.target))
+        {
+            assert(*ptr != nullptr);
+            if (parsed_value < 0 ||
+                parsed_value >
+                        static_cast<std::int64_t>(
+                                std::numeric_limits<std::uint16_t>::max()))
+            {
+                std::string msg = "Integer out of range for ";
+                msg += option_key;
+                msg += ": \"";
+                msg += std::string{raw_value.text};
+                msg += "\"";
+                return fail(std::move(msg));
+            }
+            **ptr = static_cast<std::uint16_t>(parsed_value);
+            return true;
+        }
+
+        if (auto* ptr = std::get_if<std::int16_t*>(&opt.target))
+        {
+            assert(*ptr != nullptr);
+            if (parsed_value <
+                        static_cast<std::int64_t>(
+                                std::numeric_limits<std::int16_t>::min()) ||
+                parsed_value >
+                        static_cast<std::int64_t>(
+                                std::numeric_limits<std::int16_t>::max()))
+            {
+                std::string msg = "Integer out of range for ";
+                msg += option_key;
+                msg += ": \"";
+                msg += std::string{raw_value.text};
+                msg += "\"";
+                return fail(std::move(msg));
+            }
+            **ptr = static_cast<std::int16_t>(parsed_value);
+            return true;
+        }
+
+        if (auto* ptr = std::get_if<std::uint8_t*>(&opt.target))
+        {
+            assert(*ptr != nullptr);
+            if (parsed_value < 0 ||
+                parsed_value >
+                        static_cast<std::int64_t>(
+                                std::numeric_limits<std::uint8_t>::max()))
+            {
+                std::string msg = "Integer out of range for ";
+                msg += option_key;
+                msg += ": \"";
+                msg += std::string{raw_value.text};
+                msg += "\"";
+                return fail(std::move(msg));
+            }
+            **ptr = static_cast<std::uint8_t>(parsed_value);
+            return true;
+        }
+
+        if (auto* ptr = std::get_if<std::int8_t*>(&opt.target))
+        {
+            assert(*ptr != nullptr);
+            if (parsed_value <
+                        static_cast<std::int64_t>(
+                                std::numeric_limits<std::int8_t>::min()) ||
+                parsed_value > static_cast<std::int64_t>(
+                                       std::numeric_limits<std::int8_t>::max()))
+            {
+                std::string msg = "Integer out of range for ";
+                msg += option_key;
+                msg += ": \"";
+                msg += std::string{raw_value.text};
+                msg += "\"";
+                return fail(std::move(msg));
+            }
+            **ptr = static_cast<std::int8_t>(parsed_value);
+            return true;
+        }
+
         result = parse_result::failure(
                 parse_error::invalid_value,
                 std::string{"unsupported target type for option: "} +

@@ -13,9 +13,10 @@
   "C_Cpp.codeAnalysis.clangTidy.useBuildPath": true,
   "C_Cpp.codeAnalysis.clangTidy.buildPath": "build",
 
-// GitLens AI: generate a single commit message
+  // GitLens AI: generate a single commit message
   "gitlens.ai.generateCommitMessage.customInstructions": "# Commit message conventions\n\nWe use a Conventional Commit–style format:\n\n`<type>(optional-scope): <short description>`\n\n- `<type>` is one of:\n  - `feat`      – new feature or capability\n  - `fix`       – bug fix (user-visible behavior was wrong)\n  - `docs`      – documentation-only changes\n  - `chore`     – maintenance / housekeeping\n  - `refactor`  – code changes that neither fix bugs nor add features\n  - `test`      – add or improve tests\n  - `ci`        – CI or automation changes\n  - `build`     – build tooling, deps, packaging\n  - `perf`      – performance improvements\n  - `style`     – formatting / style-only changes\n\n- `<short description>`:\n  - Must start with a **lowercase** letter.\n  - Is a short, imperative phrase (e.g. `add flag validator`, `fix parser bug`).\n\nExamples:\n\n- `feat: add short flag support`\n- `fix(parser): handle duplicate options`\n- `docs(readme): document fluent flag API`\n- `style: reformat core headers with clang-format`",
 
   // GitLens AI: generate multiple commits
+  "gitlens.ai.generateCommits.customInstructions": "# Commit message conventions\n\nFollow the rules described above for all generated commits."
   "gitlens.ai.generateCommits.customInstructions": "# Commit message conventions\n\nFollow the rules described above for all generated commits."
 }

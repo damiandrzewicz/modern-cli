@@ -26,3 +26,23 @@ Examples:
 - `fix(parser): handle duplicate options`
 - `docs(readme): document fluent flag API`
 - `style: reformat core headers with clang-format`
+
+## Reverts
+
+Reverts are allowed, but they must still follow the same Conventional Commit–style header.
+
+Accepted format:
+
+`revert(optional-scope): <short description>`
+
+Guidelines:
+
+- Use `revert` as the type.
+- Keep the short description **lowercase**.
+- Include the reverted commit subject in quotes when helpful.
+- If the revert is for a specific area, add a scope (e.g. `revert(parser): ...`).
+
+Examples:
+
+- `revert: "feat: add short flag support"`
+- `revert(parser): revert "fix(parser): handle duplicate options"`

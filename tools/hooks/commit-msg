@@ -4,7 +4,7 @@ set -euo pipefail
 COMMIT_MSG_FILE="$1"
 MSG="$(head -n1 "$COMMIT_MSG_FILE")"
 
-PATTERN_TYPE='^(feat|fix|docs|chore|refactor|test|ci|build|perf|style)(\(.+\))?: .+'
+PATTERN_TYPE='^(feat|fix|docs|chore|refactor|test|ci|build|perf|style|revert)(\(.+\))?: .+'
 
 if ! printf '%s\n' "$MSG" | grep -Eq "$PATTERN_TYPE"; then
     cat >&2 <<EOF
@@ -27,6 +27,7 @@ Where <type> is one of:
     build     - changes to build tooling, dependencies, or packaging
     perf      - performance improvements
     style     - formatting or style-only changes (no logic changes)
+    revert    - revert a previous change
 
 Examples:
     feat: add short flag support
@@ -40,6 +41,8 @@ Examples:
     build: switch to Ninja generator by default
     perf: cache normalized option names
     style: reformat core headers with clang-format
+    revert: "feat: add short flag support"
+    revert(parser): revert "fix(parser): handle duplicate options correctly"
 
 Notes:
     - <short description> must start with a lowercase letter.

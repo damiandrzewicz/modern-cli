@@ -1,7 +1,8 @@
 #ifndef MCLI_DETAIL_BUILDER_COMMAND_BUILDER_HPP_
 #define MCLI_DETAIL_BUILDER_COMMAND_BUILDER_HPP_
 
-#include "mcli/detail/builder/flag_builder.hpp"
+#include "mcli/detail/builder/arg_option_builder.hpp"
+#include "mcli/detail/builder/flag_option_builder.hpp"
 #include "mcli/detail/command.hpp"
 #include "mcli/detail/parse/command_parser.hpp"
 
@@ -16,9 +17,17 @@ public:
     /**
      * @brief Start building a flag option.
      */
-    flag_builder flag()
+    flag_option_builder flag()
     {
-        return flag_builder{*this, m_cmd};
+        return flag_option_builder{*this, m_cmd};
+    }
+
+    /**
+     * @brief Start building an argument option.
+     */
+    arg_option_builder arg()
+    {
+        return arg_option_builder{*this, m_cmd};
     }
 
     /**

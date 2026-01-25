@@ -11,7 +11,9 @@ enum class parse_error
     none,
     unknown_option,
     duplicate_option,
+    missing_value,
     invalid_value,
+    unexpected_value,
 };
 
 class parse_result

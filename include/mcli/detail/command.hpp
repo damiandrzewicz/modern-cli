@@ -1,7 +1,6 @@
 #ifndef MCLI_DETAIL_COMMAND_HPP_
 #define MCLI_DETAIL_COMMAND_HPP_
 
-#include "mcli/detail/spec/flag_spec.hpp"
 #include "mcli/detail/spec/option_spec.hpp"
 
 #include <optional>
@@ -16,16 +15,8 @@ class command
 public:
     command() = default;
 
-    void add_flag(spec::flag_spec flag, bool& target)
+    void add_option(spec::option_spec opt)
     {
-        spec::option_spec opt;
-        opt.name = std::move(flag.name);
-        opt.abbr = std::move(flag.abbr);
-        opt.desc = std::move(flag.desc);
-        opt.target = &target;
-        opt.kind = spec::option_kind::flag;
-        opt.vkind = spec::value_kind::boolean;
-
         append_option(std::move(opt));
     }
 
@@ -55,7 +46,7 @@ public:
         return std::nullopt;
     }
 
-    void reset_seen_flags()
+    void reset_seen_options()
     {
         for (auto& opt : m_options)
         {
@@ -64,7 +55,7 @@ public:
     }
 
     // Read-only access to defined options for diagnostics
-    const std::vector<spec::option_spec>& options() const noexcept
+    [[nodiscard]] const std::vector<spec::option_spec>& options() const noexcept
     {
         return m_options;
     }
@@ -73,7 +64,6 @@ private:
     void append_option(spec::option_spec opt)
     {
         assert_option_unique(opt);
-        validate(opt);
         m_options.push_back(std::move(opt));
     }
 
@@ -101,42 +91,6 @@ private:
                                         "a command)"});
                 }
             }
-        }
-    }
-
-    static void validate(const spec::option_spec& opt)
-    {
-        if (opt.name.empty())
-        {
-            std::string msg{"option must have a name"};
-            if (!opt.abbr.empty())
-            {
-                msg += " (provided abbreviation \"";
-                msg += std::string{opt.abbr};
-                msg += "\" without a long name)";
-            }
-            if (!opt.desc.empty())
-            {
-                msg += "; help: \"";
-                msg += std::string{opt.desc};
-                msg += "\"";
-            }
-            throw std::invalid_argument(msg);
-        }
-
-        if (opt.desc.empty())
-        {
-            std::string msg{"option "};
-            msg += '"';
-            msg += std::string{opt.name};
-            msg += '"';
-            if (!opt.abbr.empty())
-            {
-                msg += "/";
-                msg += std::string{opt.abbr};
-            }
-            msg += " should have help text";
-            throw std::invalid_argument(msg);
         }
     }
 

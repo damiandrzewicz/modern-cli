@@ -10,7 +10,7 @@ namespace mcli
 /**
  * @brief Define a command-line interface.
  */
-[[nodiscard]] detail::builder::command_builder define()
+[[nodiscard]] static detail::builder::command_builder define()
 {
     return detail::builder::command_builder{};
 }

@@ -18,5 +18,4 @@
 
   // GitLens AI: generate multiple commits
   "gitlens.ai.generateCommits.customInstructions": "# Commit message conventions\n\nFollow the rules described above for all generated commits."
-  "gitlens.ai.generateCommits.customInstructions": "# Commit message conventions\n\nFollow the rules described above for all generated commits."
 }
